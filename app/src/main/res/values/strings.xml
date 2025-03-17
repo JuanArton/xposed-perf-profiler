@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Perf Profiler</string>
+    <string name="app_icon">App icon</string>
+    <string name="add">Add</string>
+    <string name="show_system_app">Show system app</string>
+    <string name="hide_system_app">Hide system app</string>
+    <string name="profile_name">Profile Name</string>
+    <string name="core_cluster">Core cluster</string>
+    <string name="freq_title">Freq Title</string>
+    <string name="item_value">Item Value</string>
+    <string name="item_title">Item Title</string>
+    <string name="max_freq">Maximum CPU Frequency</string>
+    <string name="min_freq">Minimum CPU Frequency</string>
+    <string name="cpu_governor">CPU Governor</string>
+    <string name="not_set">Not Set</string>
+    <string name="gpu">GPU</string>
+    <string name="profile_name_cant_be_empty">Profile name can\'t be empty</string>
+    <string name="default_profile">Default Profile</string>
+    <string name="app_list">App List</string>
+    <string name="profile_setting">Profile Setting</string>
+    <string name="charging_profile">Charging Profile</string>
+    <string name="if_temp_37"><![CDATA[If temp > 37]]></string>
+    <string name="if_temp_40"><![CDATA[If temp > 40]]></string>
+    <string name="if_temp_42"><![CDATA[If temp > 42]]></string>
+    <string name="if_temp_45"><![CDATA[If temp > 45]]></string>
+    <string name="profiles">Profiles</string>
+</resources>
