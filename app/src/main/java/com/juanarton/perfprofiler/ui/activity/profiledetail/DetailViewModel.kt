@@ -3,67 +3,75 @@ package com.juanarton.perfprofiler.ui.activity.profiledetail
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.core.data.domain.usecase.local.AppRepositoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val appRepositoryUseCase: AppRepositoryUseCase
-): ViewModel() {
+) : ViewModel() {
+
     private val _cpuFolders: MutableLiveData<List<String>> = MutableLiveData()
     val cpuFolders: LiveData<List<String>> = _cpuFolders
 
+    private val compositeDisposable = CompositeDisposable()
+
     fun getCpuFolders() {
-        viewModelScope.launch {
-            appRepositoryUseCase.getCpuFolders().collect {
-                _cpuFolders.value = it
-            }
-        }
+        val disposable = appRepositoryUseCase.getCpuFolders()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ result ->
+                _cpuFolders.value = result
+            }, { error ->
+                error.printStackTrace()
+            })
+
+        compositeDisposable.add(disposable)
     }
 
-    suspend fun getCpuMaxFreq(policy: String): String? {
-        return appRepositoryUseCase.getCpuMaxFreq(policy).first()
+    fun getCpuMaxFreq(policy: String): String {
+        return appRepositoryUseCase.getCpuMaxFreq(policy).blockingGet()
     }
 
-    suspend fun getCpuMinFreq(policy: String): String? {
-        return appRepositoryUseCase.getCpuMinFreq(policy).first()
+    fun getCpuMinFreq(policy: String): String {
+        return appRepositoryUseCase.getCpuMinFreq(policy).blockingGet()
     }
 
-    suspend fun getCurrentCpuGovernor(policy: String): String? {
-        return appRepositoryUseCase.getCurrentCpuGovernor(policy).first()
+    fun getCurrentCpuGovernor(policy: String): String {
+        return appRepositoryUseCase.getCurrentCpuGovernor(policy).blockingGet()
     }
 
-    suspend fun getGpuMaxFreq(): String? {
-        return appRepositoryUseCase.getGpuMaxFreq().first()
+    fun getGpuMaxFreq(): String {
+        return appRepositoryUseCase.getGpuMaxFreq().blockingGet()
     }
 
-    suspend fun getGpuMinFreq(): String? {
-        return appRepositoryUseCase.getGpuMinFreq().first()
+    fun getGpuMinFreq(): String {
+        return appRepositoryUseCase.getGpuMinFreq().blockingGet()
     }
 
-    suspend fun getCurrentGpuGovernor(): String? {
-        return appRepositoryUseCase.getCurrentGpuGovernor().first()
+    fun getCurrentGpuGovernor(): String {
+        return appRepositoryUseCase.getCurrentGpuGovernor().blockingGet()
     }
 
-    suspend fun getScalingAvailableFreq(policy: String): List<String>? {
-        return appRepositoryUseCase.getScalingAvailableFreq(policy).first()
+    fun getScalingAvailableFreq(policy: String): List<String> {
+        return appRepositoryUseCase.getScalingAvailableFreq(policy).blockingGet()
     }
 
-    suspend fun getScalingAvailableGov(policy: String): List<String>? {
-        return appRepositoryUseCase.getScalingAvailableGov(policy).first()
+    fun getScalingAvailableGov(policy: String): List<String> {
+        return appRepositoryUseCase.getScalingAvailableGov(policy).blockingGet()
     }
 
-    suspend fun getGpuFrequencies(): List<String>? {
-        return appRepositoryUseCase.getGpuFrequencies().first()
+    fun getGpuFrequencies(): List<String> {
+        return appRepositoryUseCase.getGpuFrequencies().blockingGet()
     }
 
-    suspend fun getGpuGovernors(): List<String>? {
-        return appRepositoryUseCase.getGpuGovernors().first()
+    fun getGpuGovernors(): List<String> {
+        return appRepositoryUseCase.getGpuGovernors().blockingGet()
     }
 
     fun saveProfile(profile: Profile) {

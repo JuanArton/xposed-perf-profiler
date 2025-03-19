@@ -17,9 +17,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.github.kyuubiran.ezxhelper.utils.runOnMainThread
 import com.juanarton.perfprofiler.R
 import com.juanarton.perfprofiler.core.adapter.AppListAdapter
 import com.juanarton.perfprofiler.core.data.domain.model.AppItem
@@ -33,7 +31,6 @@ import com.juanarton.perfprofiler.ui.activity.profiledetail.DetailProfileActivit
 import com.juanarton.perfprofiler.ui.fragment.dialog.ChoicesDialogFragment
 import com.juanarton.perfprofiler.ui.fragment.dialog.DialogCallback
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AppListFragment : Fragment() {
@@ -180,5 +177,6 @@ class AppListFragment : Fragment() {
         super.onResume()
 
         appListViewModel.getProfile()
+        _binding = null
     }
 }

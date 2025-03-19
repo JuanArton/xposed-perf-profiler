@@ -1,37 +1,34 @@
 package com.juanarton.perfprofiler.core.data.domain.usecase.local
 
-import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import com.juanarton.perfprofiler.core.data.domain.model.AppProfile
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
-import com.juanarton.perfprofiler.core.data.source.local.room.entity.AppProfileEntity
-import com.juanarton.perfprofiler.core.data.source.local.room.entity.ProfileEntity
-import kotlinx.coroutines.flow.Flow
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Single
 
 interface AppRepositoryUseCase {
-    fun getInstalledApps(packageManager: PackageManager, getSystem: Boolean): Flow<List<String>>
-    fun getCpuFolders(): Flow<List<String>>
-    fun getScalingAvailableFreq(policy: String): Flow<List<String>?>
-    fun getScalingAvailableGov(policy: String): Flow<List<String>?>
-    fun getCpuMaxFreq(policy: String): Flow<String?>
-    fun getCpuMinFreq(policy: String): Flow<String?>
-    fun getCurrentCpuGovernor(policy: String): Flow<String?>
-    fun getGpuFrequencies(): Flow<List<String>?>
-    fun getGpuGovernors(): Flow<List<String>?>
-    fun getCurrentGpuGovernor(): Flow<String?>
-    fun getGpuMaxFreq(): Flow<String?>
-    fun getGpuMinFreq(): Flow<String?>
-    fun getProfile(): Flow<List<Profile>>
-    fun getProfileByName(name: String): Flow<Profile>
-    fun insertProfile(profile: Profile)
-    fun updateProfile(profile: Profile)
-    fun deleteProfile(profile: Profile)
-    fun getAppProfile(): Flow<List<AppProfile>>
-    fun getAppProfileByName(packageId: String): Flow<AppProfile?>
-    fun insertAppProfile(appProfile: AppProfile)
-    fun deleteAppProfile(appProfile: AppProfile)
-    fun deleteAppProfileByProfile(profile: String)
+    fun getInstalledApps(packageManager: PackageManager, getSystem: Boolean): Single<List<String>>
+    fun getCpuFolders(): Single<List<String>>
+    fun getScalingAvailableFreq(policy: String): Single<List<String>>
+    fun getScalingAvailableGov(policy: String): Single<List<String>>
+    fun getCpuMaxFreq(policy: String): Single<String>
+    fun getCpuMinFreq(policy: String): Single<String>
+    fun getCurrentCpuGovernor(policy: String): Single<String>
+    fun getGpuFrequencies(): Single<List<String>>
+    fun getGpuGovernors(): Single<List<String>>
+    fun getCurrentGpuGovernor(): Single<String>
+    fun getGpuMaxFreq(): Single<String>
+    fun getGpuMinFreq(): Single<String>
+    fun getProfile(): Single<List<Profile>>
+    fun getProfileByName(name: String): Single<Profile>
+    fun insertProfile(profile: Profile): Completable
+    fun updateProfile(profile: Profile): Completable
+    fun deleteProfile(profile: Profile): Completable
+    fun getAppProfile(): Single<List<AppProfile>>
+    fun getAppProfileByName(packageId: String): Single<AppProfile>
+    fun insertAppProfile(appProfile: AppProfile): Completable
+    fun deleteAppProfile(appProfile: AppProfile): Completable
+    fun deleteAppProfileByProfile(profile: String): Completable
     fun setDefaultProfile(profile: String)
     fun getDefaultProfile(): String
     fun setChargingProfile(profile: String)

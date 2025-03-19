@@ -23,7 +23,7 @@ object IOUtils {
         }
     }
 
-    fun writeToFile(path: String, fileName: String, content: String): Boolean {
+    fun writeToFile(path: String, fileName: String, content: String, isGpu: Boolean): Boolean {
         val filePath = "$path/$fileName"
 
         return try {
@@ -31,9 +31,9 @@ object IOUtils {
             val os = process.outputStream
             val writer = os.bufferedWriter()
 
-            writer.write("chmod 644 \"$filePath\"\n")
+            if (!isGpu) writer.write("chmod 644 \"$filePath\"\n")
             writer.write("echo \"$content\" > \"$filePath\"\n")
-            writer.write("chmod 444 \"$filePath\"\n")
+            if (!isGpu) writer.write("chmod 444 \"$filePath\"\n")
             writer.write("exit\n")
             writer.flush()
             writer.close()
@@ -44,5 +44,4 @@ object IOUtils {
             false
         }
     }
-
 }

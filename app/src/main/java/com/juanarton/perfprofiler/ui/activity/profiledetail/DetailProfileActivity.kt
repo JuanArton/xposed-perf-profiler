@@ -125,26 +125,26 @@ class DetailProfileActivity : AppCompatActivity() {
                         clusterFreqMin.tvItemValue.text = cpuMinFreqs[policyIndex]
                         clusterGov.tvItemValue.text = cpuCurrentGov[policyIndex]
                     } else {
-                        detailViewModel.getCpuMaxFreq(policy)?.let {
+                        detailViewModel.getCpuMaxFreq(policy).let {
                             clusterFreqMax.tvItemValue.text = formatStringMhz(it)
                             cpuMaxFreqs.add(it)
                         }
 
                         clusterFreqMin.tvItemTitle.text = getString(R.string.min_freq)
-                        detailViewModel.getCpuMinFreq(policy)?.let {
+                        detailViewModel.getCpuMinFreq(policy).let {
                             clusterFreqMin.tvItemValue.text = formatStringMhz(it)
                             cpuMinFreqs.add(it)
                         }
 
                         clusterGov.tvItemTitle.text = getString(R.string.cpu_governor)
-                        detailViewModel.getCurrentCpuGovernor(policy)?.let {
+                        detailViewModel.getCurrentCpuGovernor(policy).let {
                             clusterGov.tvItemValue.text = it
                             cpuCurrentGov.add(it)
                         }
                     }
 
-                    val cpuFreqs = detailViewModel.getScalingAvailableFreq(policy)?.filter { it.isNotEmpty() }
-                    val cpuGovs = detailViewModel.getScalingAvailableGov(policy)?.filter { it.isNotEmpty() }
+                    val cpuFreqs = detailViewModel.getScalingAvailableFreq(policy).filter { it.isNotEmpty() }
+                    val cpuGovs = detailViewModel.getScalingAvailableGov(policy).filter { it.isNotEmpty() }
 
                     view.clusterFreqMax.clickMask.setOnClickListener {
                         val fragment = ChoicesDialogFragment(CPU_MAX, policyIndex, cpuFreqs)
@@ -180,26 +180,26 @@ class DetailProfileActivity : AppCompatActivity() {
                         clusterGov.tvItemValue.text = gpuCurrentGov
                     } else {
                         clusterFreqMax.tvItemTitle.text = getString(R.string.max_freq)
-                        detailViewModel.getGpuMaxFreq()?.let {
+                        detailViewModel.getGpuMaxFreq().let {
                             clusterFreqMax.tvItemValue.text = formatGpuStringMhz(it)
                             gpuMaxFreq = it
                         }
 
                         clusterFreqMin.tvItemTitle.text = getString(R.string.min_freq)
-                        detailViewModel.getGpuMinFreq()?.let {
+                        detailViewModel.getGpuMinFreq().let {
                             clusterFreqMin.tvItemValue.text = formatGpuStringMhz(it)
                             gpuMinFreq = it
                         }
 
                         clusterGov.tvItemTitle.text = getString(R.string.cpu_governor)
-                        detailViewModel.getCurrentGpuGovernor()?.let {
+                        detailViewModel.getCurrentGpuGovernor().let {
                             clusterGov.tvItemValue.text = it
                             gpuCurrentGov = it
                         }
                     }
 
-                    val gpuFreqs = detailViewModel.getGpuFrequencies()?.filter { it.isNotEmpty() }
-                    val gpuGovs = detailViewModel.getGpuGovernors()?.filter { it.isNotEmpty() }
+                    val gpuFreqs = detailViewModel.getGpuFrequencies().filter { it.isNotEmpty() }
+                    val gpuGovs = detailViewModel.getGpuGovernors().filter { it.isNotEmpty() }
 
                     clusterGpu.clusterFreqMax.clickMask.setOnClickListener {
                         val fragment = ChoicesDialogFragment(GPU_MAX, 0, gpuFreqs)

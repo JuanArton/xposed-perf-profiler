@@ -4,71 +4,71 @@ import android.content.pm.PackageManager
 import com.juanarton.perfprofiler.core.data.domain.model.AppProfile
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.core.data.domain.repository.IAppRepository
-import com.juanarton.perfprofiler.core.data.source.local.room.entity.AppProfileEntity
-import kotlinx.coroutines.flow.Flow
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Single
 import javax.inject.Inject
 
 class AppRepositoryImpl @Inject constructor(
     private val iAppRepository: IAppRepository
-): AppRepositoryUseCase {
-    override fun getInstalledApps(packageManager: PackageManager, getSystem: Boolean): Flow<List<String>> =
+) : AppRepositoryUseCase {
+    override fun getInstalledApps(packageManager: PackageManager, getSystem: Boolean): Single<List<String>> =
         iAppRepository.getInstalledApps(packageManager, getSystem)
 
-    override fun getCpuFolders(): Flow<List<String>> =
+    override fun getCpuFolders(): Single<List<String>> =
         iAppRepository.getCpuFolders()
 
-    override fun getScalingAvailableFreq(policy: String): Flow<List<String>?> =
+    override fun getScalingAvailableFreq(policy: String): Single<List<String>> =
         iAppRepository.getScalingAvailableFreq(policy)
 
-    override fun getScalingAvailableGov(policy: String): Flow<List<String>?> =
+    override fun getScalingAvailableGov(policy: String): Single<List<String>> =
         iAppRepository.getScalingAvailableGov(policy)
 
-    override fun getCpuMaxFreq(policy: String): Flow<String?> =
+    override fun getCpuMaxFreq(policy: String): Single<String> =
         iAppRepository.getCpuMaxFreq(policy)
 
-    override fun getCpuMinFreq(policy: String): Flow<String?> =
+    override fun getCpuMinFreq(policy: String): Single<String> =
         iAppRepository.getCpuMinFreq(policy)
 
-    override fun getCurrentCpuGovernor(policy: String): Flow<String?> =
+    override fun getCurrentCpuGovernor(policy: String): Single<String> =
         iAppRepository.getCurrentCpuGovernor(policy)
 
-    override fun getGpuFrequencies(): Flow<List<String>?> =
+    override fun getGpuFrequencies(): Single<List<String>> =
         iAppRepository.getGpuFrequencies()
 
-    override fun getGpuGovernors(): Flow<List<String>?> =
+    override fun getGpuGovernors(): Single<List<String>> =
         iAppRepository.getGpuGovernors()
 
-    override fun getCurrentGpuGovernor(): Flow<String?> =
+    override fun getCurrentGpuGovernor(): Single<String> =
         iAppRepository.getCurrentGpuGovernor()
 
-    override fun getGpuMaxFreq(): Flow<String?> =
+    override fun getGpuMaxFreq(): Single<String> =
         iAppRepository.getGpuMaxFreq()
 
-    override fun getGpuMinFreq(): Flow<String?> =
+    override fun getGpuMinFreq(): Single<String> =
         iAppRepository.getGpuMinFreq()
 
-    override fun getProfile(): Flow<List<Profile>> =
+    override fun getProfile(): Single<List<Profile>> =
         iAppRepository.getProfile()
 
-    override fun getProfileByName(name: String): Flow<Profile> =
+    override fun getProfileByName(name: String): Single<Profile> =
         iAppRepository.getProfileByName(name)
 
-    override fun insertProfile(profile: Profile) {
-        iAppRepository.insertProfile(profile)
+    override fun insertProfile(profile: Profile): Completable {
+        return iAppRepository.insertProfile(profile)
     }
 
-    override fun updateProfile(profile: Profile) {
-        iAppRepository.updateProfile(profile)
+    override fun updateProfile(profile: Profile): Completable {
+        return iAppRepository.updateProfile(profile)
     }
 
-    override fun deleteProfile(profile: Profile) {
-        iAppRepository.deleteProfile(profile)
+    override fun deleteProfile(profile: Profile): Completable {
+        return iAppRepository.deleteProfile(profile)
     }
 
-    override fun getAppProfile(): Flow<List<AppProfile>> =
+    override fun getAppProfile(): Single<List<AppProfile>> =
         iAppRepository.getAppProfile()
 
-    override fun getAppProfileByName(packageId: String): Flow<AppProfile?> =
+    override fun getAppProfileByName(packageId: String): Single<AppProfile> =
         iAppRepository.getAppProfileByName(packageId)
 
     override fun insertAppProfile(appProfile: AppProfile) =
@@ -77,8 +77,8 @@ class AppRepositoryImpl @Inject constructor(
     override fun deleteAppProfile(appProfile: AppProfile) =
         iAppRepository.deleteAppProfile(appProfile)
 
-    override fun deleteAppProfileByProfile(profile: String) {
-        iAppRepository.deleteAppProfileByProfile(profile)
+    override fun deleteAppProfileByProfile(profile: String): Completable {
+        return iAppRepository.deleteAppProfileByProfile(profile)
     }
 
     override fun setDefaultProfile(profile: String) {

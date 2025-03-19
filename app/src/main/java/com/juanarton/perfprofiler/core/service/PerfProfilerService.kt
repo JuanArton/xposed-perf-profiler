@@ -1,52 +1,43 @@
 package com.juanarton.perfprofiler.core.service
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.Service
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.content.pm.ServiceInfo
-import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.github.kyuubiran.ezxhelper.BuildConfig
 import com.juanarton.perfprofiler.R
 import com.juanarton.perfprofiler.core.data.domain.model.AppProfile
 import com.juanarton.perfprofiler.core.data.domain.repository.IAppRepository
 import com.juanarton.perfprofiler.core.util.IOUtils.writeToFile
 import com.juanarton.perfprofiler.core.util.Path
+import com.juanarton.perfprofiler.core.util.Path.BATTERY_UEVENT
 import com.topjohnwu.superuser.Shell
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.math.floor
 
 @AndroidEntryPoint
-class PerfProfilerService : Service() {
+class PerfProfilerService : LifecycleService() {
     private var isServiceStarted = false
 
     @Inject
     lateinit var iAppRepository: IAppRepository
-    private val serviceScopeChangeProfile = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val serviceScopeBattMonitor = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val limitedDispatcher = Dispatchers.IO.limitedParallelism(1)
-    private val profileMutex = Mutex()
     private var lastTopApp = ""
     private var isCharging = false
     private var temperature = 0
@@ -54,10 +45,17 @@ class PerfProfilerService : Service() {
     private var monChargingExec = false
     private var monTempExec = false
     private var lastProfile: AppProfile? = null
+    private var isChanging = false
 
-    private val scope = CoroutineScope(Dispatchers.IO)
     private var debounceJob: Job? = null
     private val debounceDelay = 50L
+
+    private val disposable = CompositeDisposable()
+    private var profileDisposableRef: Disposable? = null
+    private var applyDisposableRef: Disposable? = null
+    private var pollingDisposableRef: Disposable? = null
+
+    private var currentAppliedProfile: String? = null
 
     companion object {
         init {
@@ -71,19 +69,20 @@ class PerfProfilerService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
         return null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+
         if (intent != null) {
             when (intent.action) {
-                Action.START.name -> {
-                    startService()
-                }
+                Action.START.name -> startService()
                 Action.STOP.name -> stopService()
                 Action.CHANGE_PROFILE.name -> {
                     debounceJob?.cancel()
-                    debounceJob = scope.launch {
+                    debounceJob = lifecycleScope.launch {
                         delay(debounceDelay)
                         if (!isServiceStarted) startService()
                         val packageId = intent.getStringExtra("PACKAGE_ID")
@@ -101,65 +100,92 @@ class PerfProfilerService : Service() {
     }
 
     private fun changeProfile(packageId: String) {
-        if (packageId != lastTopApp ) {
+        if (packageId != lastTopApp && !isChanging) {
+            isChanging = true
+            lastTopApp = packageId
 
-            serviceScopeChangeProfile.coroutineContext.cancelChildren()
-            serviceScopeChangeProfile.launch(limitedDispatcher) {
-                profileMutex.withLock {
-                    val appProfile = iAppRepository.getAppProfileByName(packageId).first()
+            profileDisposableRef?.dispose()
+
+            profileDisposableRef = iAppRepository.getAppProfileByName(packageId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ appProfile ->
                     lastProfile = appProfile
 
                     if (!isCharging && !isOvh) {
-                        if (appProfile != null) {
+                        if (appProfile.packageId.isNotEmpty()) {
                             applyProfile(appProfile.profile)
                         } else {
-                            val defProfile = iAppRepository.getDefaultProfile()
-                            if (defProfile.isNotEmpty()) {
-                                applyProfile(defProfile)
-                            }
+                            applyProfile(iAppRepository.getDefaultProfile())
                         }
                     }
 
                     lastTopApp = packageId
-                }
-            }
+                }, { error ->
+                    Log.e("PerfProfilerService", "Error getting app profile: ${error.message}")
+                })
+
+            disposable.add(profileDisposableRef!!)
         }
     }
 
-    private suspend fun applyProfile(profileString: String) {
-        val profile = iAppRepository.getProfileByName(profileString).first()
-        val cpuFolder = iAppRepository.getCpuFolders().first()
+    @SuppressLint("CheckResult")
+    private fun applyProfile(profileString: String) {
+        applyDisposableRef?.dispose()
+        applyDisposableRef = iAppRepository.getProfileByName(profileString)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ profile ->
+                iAppRepository.getCpuFolders()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ cpuFolder ->
+                        val cpuTasks = cpuFolder.mapIndexed { index, policy ->
+                            Completable.fromCallable {
+                                val maxFreq = listOf(profile.c1MaxFreq, profile.c2MaxFreq, profile.c3MaxFreq)
+                                    .getOrElse(index) { profile.c1MaxFreq }
+                                val minFreq = listOf(profile.c1MinFreq, profile.c2MinFreq, profile.c3MinFreq)
+                                    .getOrElse(index) { profile.c1MinFreq }
+                                val gov = listOf(profile.c1Governor, profile.c2Governor, profile.c3Governor)
+                                    .getOrElse(index) { profile.c1Governor }
 
-        cpuFolder.forEachIndexed { index, policy ->
-            val maxFreq = when (index) {
-                0 -> profile.c1MaxFreq
-                1 -> profile.c2MaxFreq
-                2 -> profile.c3MaxFreq
-                else -> profile.c1MaxFreq
-            }
+                                writeToFile("${Path.CPU_PATH}/$policy", Path.SCALING_MAX_FREQ, maxFreq, false)
+                                writeToFile("${Path.CPU_PATH}/$policy", Path.SCALING_MIN_FREQ, minFreq, false)
+                                writeToFile("${Path.CPU_PATH}/$policy", Path.SCALING_GOVERNOR, gov, false)
+                            }.subscribeOn(Schedulers.io())
+                        }
 
-            val minFreq = when (index) {
-                0 -> profile.c1MinFreq
-                1 -> profile.c2MinFreq
-                2 -> profile.c3MinFreq
-                else -> profile.c1MinFreq
-            }
+                        val gpuTasks = listOf(
+                            Completable.fromCallable { writeToFile(Path.GPU_PATH, Path.GPU_MAX_FREQ, profile.gpuMaxFreq, true) }
+                                .subscribeOn(Schedulers.io()),
+                            Completable.fromCallable { writeToFile(Path.GPU_PATH, Path.GPU_MIN_FREQ, profile.gpuMinFreq, true) }
+                                .subscribeOn(Schedulers.io()),
+                            Completable.fromCallable { writeToFile(Path.GPU_PATH, Path.GPU_CURRENT_GOV, profile.gpuGovernor, true) }
+                                .subscribeOn(Schedulers.io())
+                        )
 
-            val gov = when (index) {
-                0 -> profile.c1Governor
-                1 -> profile.c2Governor
-                2 -> profile.c3Governor
-                else -> profile.c1Governor
-            }
+                        disposable.add(
+                            Completable.mergeArray(*(cpuTasks + gpuTasks).toTypedArray())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .doFinally {
+                                    isChanging = false
+                                    disposable.remove(applyDisposableRef!!)
+                                }
+                                .subscribe(
+                                    { Log.d("PerfProfilerService", "All CPU and GPU settings applied successfully") },
+                                    { error -> Log.e("PerfProfilerService", "Error applying settings: ${error.message}") },
+                                )
+                        )
+                    }, { error ->
+                        Log.e("PerfProfilerService", "Error getting CPU folders: ${error.message}")
+                        isChanging = false
+                    })
+            }, { error ->
+                Log.e("PerfProfilerService", "Error getting profile: ${error.message}")
+                isChanging = false
+            })
 
-            writeToFile("${Path.CPU_PATH}/$policy", Path.SCALING_MAX_FREQ, maxFreq)
-            writeToFile("${Path.CPU_PATH}/$policy", Path.SCALING_MIN_FREQ, minFreq)
-            writeToFile("${Path.CPU_PATH}/$policy", Path.SCALING_GOVERNOR, gov)
-        }
-
-        writeToFile(Path.GPU_PATH, Path.GPU_MAX_FREQ, profile.gpuMaxFreq)
-        writeToFile(Path.GPU_PATH, Path.GPU_MIN_FREQ, profile.gpuMinFreq)
-        writeToFile(Path.GPU_PATH, Path.GPU_CURRENT_GOV, profile.gpuGovernor)
+        disposable.add(applyDisposableRef!!)
     }
 
     private fun startService() {
@@ -167,25 +193,15 @@ class PerfProfilerService : Service() {
             if (!isServiceStarted) {
                 isServiceStarted = true
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    startForeground(
-                        1, createNotification(),
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-                            } else {
-                                0
-                            }
-                        } else { 0 }
-                    )
-                } else {
-                    startForeground(1, createNotification())
-                }
+                startForeground(1, createNotification())
 
-                serviceScopeBattMonitor.coroutineContext.cancelChildren()
-                serviceScopeBattMonitor.launch(limitedDispatcher) {
-                    while (true) {
-                        val batteryInfo = getBatteryInfo(this@PerfProfilerService)
+                pollingDisposableRef?.dispose()
+
+                pollingDisposableRef = Observable.interval(1, TimeUnit.SECONDS)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        val batteryInfo = getBatteryInfo()
                         isCharging = batteryInfo.second
                         temperature = batteryInfo.first
 
@@ -194,30 +210,38 @@ class PerfProfilerService : Service() {
                             if (profile.isNotEmpty()) {
                                 applyProfile(profile)
                             }
+                            isCharging = true
                             monChargingExec = true
                         }
 
                         if (!isCharging) {
-                            monChargingExec = false
                             lastProfile?.let {
-                                applyProfile(it.profile)
+                                if (monChargingExec) {
+                                    applyProfile(it.profile)
+                                }
                             }
+                            monChargingExec = false
+                            isCharging = false
+
                         }
 
                         if (temperature >= 45) {
                             val profile = iAppRepository.getOvh45Profile()
-                            if (profile.isNotEmpty()) {
+                            if (profile.isNotEmpty() && currentAppliedProfile != "Ovh45") {
                                 applyProfile(profile)
+                                currentAppliedProfile = "Ovh45"
                             }
                         } else if (temperature in 42..44) {
                             val profile = iAppRepository.getOvh42Profile()
-                            if (profile.isNotEmpty()) {
+                            if (profile.isNotEmpty() && currentAppliedProfile != "Ovh42") {
                                 applyProfile(profile)
+                                currentAppliedProfile = "Ovh42"
                             }
                         } else if (temperature in 40..41) {
                             val profile = iAppRepository.getOvh40Profile()
-                            if (profile.isNotEmpty()) {
+                            if (profile.isNotEmpty() && currentAppliedProfile != "Ovh40") {
                                 applyProfile(profile)
+                                currentAppliedProfile = "Ovh40"
                             }
                             monTempExec = false
                             isOvh = true
@@ -225,18 +249,23 @@ class PerfProfilerService : Service() {
 
                         if (!monTempExec && temperature < 40) {
                             lastProfile?.let {
-                                applyProfile(it.profile)
+                                if (currentAppliedProfile != "LastProfile") {
+                                    applyProfile(it.profile)
+                                    currentAppliedProfile = "LastProfile"
+                                }
                             }
                             monTempExec = true
                             isOvh = false
+                            currentAppliedProfile = null
                         }
-
-                        delay(1000)
                     }
-                }
+
+                reniceProcesses()
+
+                disposable.add(pollingDisposableRef!!)
             }
         } catch (e: Exception) {
-
+            Log.e("PerfProfilerService", "Error starting service: ${e.message}")
         }
     }
 
@@ -259,37 +288,49 @@ class PerfProfilerService : Service() {
             .build()
     }
 
-    private fun stopService() {
+    private fun getBatteryInfo(): Pair<Int, Boolean> {
+        val result = Shell.cmd("cat $BATTERY_UEVENT").exec()
+        if (!result.isSuccess) return Pair(0, false)
+
+        var temperature = 0
+        var isCharging = false
+
+        result.out.forEach { line ->
+            when {
+                line.startsWith("POWER_SUPPLY_TEMP=") -> {
+                    temperature = line.substringAfter("POWER_SUPPLY_TEMP=").toInt() / 10
+                }
+                line.startsWith("POWER_SUPPLY_STATUS=") -> {
+                    val status = line.substringAfter("POWER_SUPPLY_STATUS=")
+                    isCharging = status.equals("Charging", ignoreCase = true) || status.equals("Full", ignoreCase = true)
+                }
+            }
+        }
+
+        return Pair(temperature, isCharging)
+    }
+
+    private fun reniceProcesses() {
         try {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
+            Shell.cmd("renice -n -5 -p $(pidof com.android.systemui)").exec()
+
+            if (lastTopApp.isNotEmpty()) {
+                Shell.cmd("renice -n -5 -p $(pidof $lastTopApp)").exec()
+            }
         } catch (e: Exception) {
-            Log.d("PerfProfilerService", "Service stopped without being started: $e")
+            Log.e("PerfProfilerService", "Error renicing processes: ${e.message}")
         }
+    }
+
+    private fun stopService() {
         isServiceStarted = false
-        setServiceState(this, ServiceState.STOPPED)
+        disposable.clear()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
-
-    private fun getBatteryInfo(context: Context): Pair<Int, Boolean> {
-        val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        val batteryStatus: Intent? = context.registerReceiver(null, intentFilter)
-
-        val temperature = batteryStatus?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)?.div(10f) ?: 0f
-
-        val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN)
-
-        val isCharging = when (status) {
-            BatteryManager.BATTERY_STATUS_CHARGING, BatteryManager.BATTERY_STATUS_FULL -> true
-            else -> false
-        }
-
-        return Pair(floor(temperature).toInt(), isCharging)
-    }
-
 
     override fun onDestroy() {
         super.onDestroy()
-        serviceScopeChangeProfile.cancel()
-        serviceScopeBattMonitor.cancel()
+        disposable.clear()
     }
 }

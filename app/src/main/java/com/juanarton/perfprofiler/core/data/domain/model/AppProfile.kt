@@ -5,6 +5,6 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class AppProfile(
-    val packageId: String,
+    val packageId: String = "",
     val profile: String = "Not Set",
 ): Parcelable

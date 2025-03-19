@@ -5,7 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Profile(
-    val name: String,
+    val name: String = "",
     val c1MaxFreq: String = "0",
     val c1MinFreq: String = "0",
     val c1Governor: String = "performance",

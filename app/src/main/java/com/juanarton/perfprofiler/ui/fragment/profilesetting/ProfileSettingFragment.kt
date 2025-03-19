@@ -2,16 +2,15 @@ package com.juanarton.perfprofiler.ui.fragment.profilesetting
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.widget.AppCompatSpinner
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.juanarton.perfprofiler.R
 import com.juanarton.perfprofiler.core.adapter.ProfileAdapter
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.databinding.FragmentProfileSettingBinding
@@ -113,5 +112,6 @@ class ProfileSettingFragment : Fragment() {
         super.onResume()
 
         profileSettingViewModel.getProfile()
+        _binding = null
     }
 }

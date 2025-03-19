@@ -1,15 +1,12 @@
 package com.juanarton.perfprofiler.ui.fragment.dialog
 
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.activity.addCallback
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.juanarton.perfprofiler.R
 import com.juanarton.perfprofiler.core.adapter.ChoiceAdapter
 import com.juanarton.perfprofiler.databinding.FragmentChoicesDialogBinding
 
@@ -58,5 +55,11 @@ class ChoicesDialogFragment(
             rvChoices.adapter = adapter
             adapter.setData(selectionList)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        _binding = null
     }
 }

@@ -16,4 +16,6 @@ object Path {
     const val GPU_CURRENT_GOV = "governor"
     const val GPU_MAX_FREQ = "max_freq"
     const val GPU_MIN_FREQ = "min_freq"
+
+    const val BATTERY_UEVENT = "/sys/class/power_supply/battery/uevent"
 }

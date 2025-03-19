@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class AppProfileEntity(
     @PrimaryKey
     @ColumnInfo(name = "packageId")
-    val packageId: String,
+    val packageId: String = "",
 
     @ColumnInfo(name = "profile")
     val profile: String = "Not Set",
