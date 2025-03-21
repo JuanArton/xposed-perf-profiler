@@ -7,6 +7,7 @@ import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.core.data.domain.usecase.local.AppRepositoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
@@ -74,7 +75,7 @@ class DetailViewModel @Inject constructor(
         return appRepositoryUseCase.getGpuGovernors().blockingGet()
     }
 
-    fun saveProfile(profile: Profile) {
+    fun saveProfile(profile: Profile): Completable =
         appRepositoryUseCase.insertProfile(profile)
-    }
+
 }

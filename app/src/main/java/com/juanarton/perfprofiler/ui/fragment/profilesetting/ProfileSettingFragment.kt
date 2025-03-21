@@ -2,6 +2,7 @@ package com.juanarton.perfprofiler.ui.fragment.profilesetting
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,11 +12,14 @@ import androidx.appcompat.widget.AppCompatSpinner
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider
+import autodispose2.autoDispose
 import com.juanarton.perfprofiler.core.adapter.ProfileAdapter
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.databinding.FragmentProfileSettingBinding
 import com.juanarton.perfprofiler.ui.activity.profiledetail.DetailProfileActivity
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 @AndroidEntryPoint
 class ProfileSettingFragment : Fragment() {
@@ -38,37 +42,57 @@ class ProfileSettingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        profileSettingViewModel.getProfile()
-        profileSettingViewModel.profileList.observe(viewLifecycleOwner) {
-            profileList.clear()
-            profileList.addAll(
-                it.map { profile ->
-                    profile.name
+        binding?.apply {
+            profileSettingViewModel.getProfile()
+            profileSettingViewModel.profileList.observe(viewLifecycleOwner) {
+                profileList.clear()
+                profileList.addAll(
+                    it.map { profile ->
+                        profile.name
+                    }
+                )
+
+                binding?.apply {
+                    Log.d("test", "test1")
+                    Log.d("test", "$it")
+
+                    val editListener: (Profile) -> Unit = { profile ->
+                        val intent = Intent(requireContext(), DetailProfileActivity::class.java)
+                        intent.putExtra("PROFILE", profile)
+                        startActivity(intent)
+                    }
+
+                    val deleteListener: (Profile) -> Unit = { profile ->
+                        profileSettingViewModel.deleteProfile(profile)
+                            .subscribeOn(Schedulers.io())
+                            .autoDispose(AndroidLifecycleScopeProvider.from(viewLifecycleOwner))
+                            .subscribe(
+                                {  },
+                                { error -> println("Gagal: ${error.message}") }
+                            )
+                        profileSettingViewModel.deleteAppProfileByProfile(profile.name)
+                            .subscribeOn(Schedulers.io())
+                            .autoDispose(AndroidLifecycleScopeProvider.from(viewLifecycleOwner))
+                            .subscribe(
+                                {
+                                    profileSettingViewModel.getProfile()
+                                },
+                                { error -> println("Gagal: ${error.message}") }
+                            )
+                    }
+
+                    val adapter = ProfileAdapter(editListener, deleteListener)
+                    rvProfile.layoutManager = LinearLayoutManager(requireContext())
+                    rvProfile.adapter = adapter
+                    adapter.setData(it)
+
+                    initSpinner(spinnerChargingProfile)
+                    initSpinner(spinnerOvh40Profile)
+                    initSpinner(spinnerOvh42Profile)
+                    initSpinner(spinnerOvh45Profile)
+                    initSpinner(spinnerForceProfile)
+                    initSpinner(spinnerBoostProfile)
                 }
-            )
-
-            binding?.apply {
-                val editListener: (Profile) -> Unit = { profile ->
-                    val intent = Intent(requireContext(), DetailProfileActivity::class.java)
-                    intent.putExtra("PROFILE", profile)
-                    startActivity(intent)
-                }
-
-                val deleteListener: (Profile) -> Unit = { profile ->
-                    profileSettingViewModel.deleteProfile(profile)
-                    profileSettingViewModel.deleteAppProfileByProfile(profile.name)
-                    profileSettingViewModel.getProfile()
-                }
-
-                val adapter = ProfileAdapter(editListener, deleteListener)
-                rvProfile.layoutManager = LinearLayoutManager(requireContext())
-                rvProfile.adapter = adapter
-                adapter.setData(it)
-
-                initSpinner(spinnerChargingProfile)
-                initSpinner(spinnerOvh40Profile)
-                initSpinner(spinnerOvh42Profile)
-                initSpinner(spinnerOvh45Profile)
             }
         }
     }
@@ -78,12 +102,21 @@ class ProfileSettingFragment : Fragment() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
 
+        val chg = binding!!.spinnerChargingProfile
+        val ovh40 = binding!!.spinnerOvh40Profile
+        val ovh42 = binding!!.spinnerOvh42Profile
+        val ovh45 = binding!!.spinnerOvh45Profile
+        val force = binding!!.spinnerForceProfile
+        val boost = binding!!.spinnerBoostProfile
+
         if (profileList.isNotEmpty()) {
             val index = when (spinner) {
                 binding?.spinnerChargingProfile -> profileList.indexOf(profileSettingViewModel.getChargingProfile())
                 binding?.spinnerOvh40Profile -> profileList.indexOf(profileSettingViewModel.getOvh40Profile())
                 binding?.spinnerOvh42Profile -> profileList.indexOf(profileSettingViewModel.getOvh42Profile())
                 binding?.spinnerOvh45Profile -> profileList.indexOf(profileSettingViewModel.getOvh45Profile())
+                binding?.spinnerForceProfile -> profileList.indexOf(profileSettingViewModel.getForceProfile())
+                binding?.spinnerBoostProfile -> profileList.indexOf(profileSettingViewModel.getBoostProfile())
                 else -> -1
             }
 
@@ -97,10 +130,12 @@ class ProfileSettingFragment : Fragment() {
                 val selectedItem = parent.getItemAtPosition(position).toString()
 
                 when (spinner) {
-                    binding?.spinnerChargingProfile -> profileSettingViewModel.setChargingProfile(selectedItem)
-                    binding?.spinnerOvh40Profile -> profileSettingViewModel.setOvh40Profile(selectedItem)
-                    binding?.spinnerOvh42Profile -> profileSettingViewModel.setOvh42Profile(selectedItem)
-                    binding?.spinnerOvh45Profile -> profileSettingViewModel.setOvh45Profile(selectedItem)
+                    chg -> profileSettingViewModel.setChargingProfile(selectedItem)
+                    ovh40 -> profileSettingViewModel.setOvh40Profile(selectedItem)
+                    ovh42 -> profileSettingViewModel.setOvh42Profile(selectedItem)
+                    ovh45 -> profileSettingViewModel.setOvh45Profile(selectedItem)
+                    force -> profileSettingViewModel.setForceProfile(selectedItem)
+                    boost -> profileSettingViewModel.setBoostProfile(selectedItem)
                 }
             }
 
@@ -112,6 +147,11 @@ class ProfileSettingFragment : Fragment() {
         super.onResume()
 
         profileSettingViewModel.getProfile()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
         _binding = null
     }
 }

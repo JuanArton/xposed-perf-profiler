@@ -14,6 +14,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider
+import autodispose2.autoDispose
 import com.juanarton.perfprofiler.R
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.core.util.CPUCluster
@@ -25,6 +27,8 @@ import com.juanarton.perfprofiler.databinding.ActivityDetailProfileBinding
 import com.juanarton.perfprofiler.ui.fragment.dialog.ChoicesDialogFragment
 import com.juanarton.perfprofiler.ui.fragment.dialog.DialogCallback
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -287,7 +291,12 @@ class DetailProfileActivity : AppCompatActivity() {
                                 gpuMaxFreq, gpuMinFreq, gpuCurrentGov
                             )
                         )
-                        finish()
+                            .subscribeOn(Schedulers.io())
+                            .autoDispose(AndroidLifecycleScopeProvider.from(this@DetailProfileActivity))
+                            .subscribe(
+                                { finish() },
+                                { error -> println("Gagal: ${error.message}") }
+                            )
                     }
                     else {
                         Toast.makeText(

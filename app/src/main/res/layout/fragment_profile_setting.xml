@@ -99,6 +99,50 @@
             app:layout_constraintTop_toBottomOf="@+id/tvOvh45Profile" />
 
         <TextView
+            android:id="@+id/tvForceProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/force_apply_profile_activate_from_qs_tile"
+            android:textSize="18sp"
+            android:layout_marginHorizontal="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/spinnerOvh45Profile" />
+
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/spinnerForceProfile"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginHorizontal="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvForceProfile" />
+
+        <TextView
+            android:id="@+id/tvBoostProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/boost_performance_on_orientation_change"
+            android:textSize="18sp"
+            android:layout_marginHorizontal="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/spinnerForceProfile" />
+
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/spinnerBoostProfile"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginHorizontal="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvBoostProfile" />
+
+        <TextView
             android:id="@+id/tvProfile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -109,7 +153,7 @@
             android:layout_marginHorizontal="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/spinnerOvh45Profile" />
+            app:layout_constraintTop_toBottomOf="@id/spinnerBoostProfile" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvProfile"

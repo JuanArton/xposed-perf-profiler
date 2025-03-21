@@ -1,6 +1,7 @@
 [versions]
 agp = "8.9.0-rc02"
 api = "82"
+autodispose = "2.2.1"
 libsu = "6.0.0"
 ezxhelper = "1.0.3"
 glide = "4.16.0"
@@ -27,9 +28,12 @@ rxjava = "3.1.8"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleViewmodelKtx" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationFragmentKtx" }
 api = { module = "de.robv.android.xposed:api", version.ref = "api" }
+autodispose = { module = "com.uber.autodispose2:autodispose", version.ref = "autodispose" }
+autodispose-androidx-lifecycle = { module = "com.uber.autodispose2:autodispose-androidx-lifecycle", version.ref = "autodispose" }
 core = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsu" }
 ezxhelper = { module = "com.github.kyuubiran:EzXHelper", version.ref = "ezxhelper" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }

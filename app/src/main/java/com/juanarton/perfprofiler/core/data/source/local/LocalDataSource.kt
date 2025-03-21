@@ -25,6 +25,7 @@ import com.juanarton.perfprofiler.core.util.Path.SCALING_GOVERNOR
 import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.core.content.edit
+import com.github.kyuubiran.ezxhelper.utils.Log
 
 @Singleton
 class LocalDataSource @Inject constructor(
@@ -160,4 +161,25 @@ class LocalDataSource @Inject constructor(
 
     fun getOvh45Profile(): String =
         sharedPref.getString("OVH45", "") ?: ""
+
+    fun setForceProfileActive(force: Boolean) {
+        sharedPref.edit { putBoolean("FORCE", force) }
+    }
+
+    fun getForceProfileActive(): Boolean =
+        sharedPref.getBoolean("FORCE", false)
+
+    fun setForceProfile(profile: String) {
+        sharedPref.edit { putString("FORCE_PROFILE", profile) }
+    }
+
+    fun getForceProfile(): String =
+        sharedPref.getString("FORCE_PROFILE", "") ?: ""
+
+    fun setBoostProfile(profile: String) {
+        sharedPref.edit { putString("BOOST", profile) }
+    }
+
+    fun getBoostProfile(): String =
+        sharedPref.getString("BOOST", "") ?: ""
 }

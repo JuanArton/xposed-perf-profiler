@@ -71,4 +71,8 @@ dependencies {
 
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
+
+    implementation(libs.autodispose)
+    implementation(libs.autodispose.androidx.lifecycle)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
 }

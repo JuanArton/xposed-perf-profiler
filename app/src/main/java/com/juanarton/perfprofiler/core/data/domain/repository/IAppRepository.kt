@@ -1,6 +1,7 @@
 package com.juanarton.perfprofiler.core.data.domain.repository
 
 import android.content.pm.PackageManager
+import androidx.core.content.edit
 import com.juanarton.perfprofiler.core.data.domain.model.AppProfile
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import io.reactivex.rxjava3.core.Completable
@@ -39,4 +40,10 @@ interface IAppRepository {
     fun getOvh42Profile(): String
     fun setOvh45Profile(profile: String)
     fun getOvh45Profile(): String
+    fun setForceProfileActive(force: Boolean)
+    fun getForceProfileActive(): Boolean
+    fun setForceProfile(profile: String)
+    fun getForceProfile(): String
+    fun setBoostProfile(profile: String)
+    fun getBoostProfile(): String
 }

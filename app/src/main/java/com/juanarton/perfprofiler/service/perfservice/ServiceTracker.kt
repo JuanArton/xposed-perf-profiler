@@ -1,4 +1,4 @@
-package com.juanarton.perfprofiler.core.service
+package com.juanarton.perfprofiler.service.perfservice
 
 import android.content.Context
 

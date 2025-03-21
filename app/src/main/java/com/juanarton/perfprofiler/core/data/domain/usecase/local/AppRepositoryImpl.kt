@@ -1,6 +1,7 @@
 package com.juanarton.perfprofiler.core.data.domain.usecase.local
 
 import android.content.pm.PackageManager
+import android.util.Log
 import com.juanarton.perfprofiler.core.data.domain.model.AppProfile
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.core.data.domain.repository.IAppRepository
@@ -115,4 +116,25 @@ class AppRepositoryImpl @Inject constructor(
 
     override fun getOvh45Profile(): String =
         iAppRepository.getOvh45Profile()
+
+    override fun setForceProfileActive(force: Boolean) {
+        iAppRepository.setForceProfileActive(force)
+    }
+
+    override fun getForceProfileActive(): Boolean =
+        iAppRepository.getForceProfileActive()
+
+    override fun setForceProfile(profile: String) {
+        iAppRepository.setForceProfile(profile)
+    }
+
+    override fun getForceProfile(): String =
+        iAppRepository.getForceProfile()
+
+    override fun setBoostProfile(profile: String) {
+        iAppRepository.setBoostProfile(profile)
+    }
+
+    override fun getBoostProfile(): String =
+        iAppRepository.getBoostProfile()
 }

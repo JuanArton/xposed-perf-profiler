@@ -1,1 +1,3 @@
 com.juanarton.hook.SystemHook
+com.juanarton.hook.OrientationHook
+com.juanarton.hook.StatusBarHook

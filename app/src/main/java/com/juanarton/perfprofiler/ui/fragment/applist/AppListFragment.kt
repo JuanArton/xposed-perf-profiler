@@ -18,6 +18,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider
+import autodispose2.autoDispose
 import com.juanarton.perfprofiler.R
 import com.juanarton.perfprofiler.core.adapter.AppListAdapter
 import com.juanarton.perfprofiler.core.data.domain.model.AppItem
@@ -31,6 +33,7 @@ import com.juanarton.perfprofiler.ui.activity.profiledetail.DetailProfileActivit
 import com.juanarton.perfprofiler.ui.fragment.dialog.ChoicesDialogFragment
 import com.juanarton.perfprofiler.ui.fragment.dialog.DialogCallback
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 @AndroidEntryPoint
 class AppListFragment : Fragment() {
@@ -136,17 +139,35 @@ class AppListFragment : Fragment() {
                     override fun onChoiceSelected(choiceId: String, index: Int, choice: String) {
                         if (choiceId == APP_PROFILE) {
                             if (choice == "Not Set") {
-                                appListViewModel.deleteAppProfile(AppProfile(packageId, choice))
+                                appListViewModel.deleteAppProfile(
+                                    AppProfile(
+                                        packageId, choice
+                                    )
+                                )
+                                    .subscribeOn(Schedulers.io())
+                                    .autoDispose(AndroidLifecycleScopeProvider.from(viewLifecycleOwner))
+                                    .subscribe(
+                                        {  },
+                                        { error -> println("Gagal: ${error.message}") }
+                                    )
+
                                 appName.setTextColor(tvDefaultProfile.textColors)
                                 appProfile.setTextColor(tvDefaultProfile.textColors)
                             } else {
                                 appName.setTextColor(primaryColor)
                                 appProfile.setTextColor(primaryColor)
+
                                 appListViewModel.insertAppProfile(
                                     AppProfile(
                                         packageId, choice
                                     )
                                 )
+                                    .subscribeOn(Schedulers.io())
+                                    .autoDispose(AndroidLifecycleScopeProvider.from(viewLifecycleOwner))
+                                    .subscribe(
+                                        {  },
+                                        { error -> println("Gagal: ${error.message}") }
+                                    )
                             }
 
                             appProfile.text = choice
@@ -177,6 +198,11 @@ class AppListFragment : Fragment() {
         super.onResume()
 
         appListViewModel.getProfile()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
         _binding = null
     }
 }

@@ -10,6 +10,7 @@ import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.core.data.domain.usecase.local.AppRepositoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -64,29 +65,11 @@ class AppListViewModel @Inject constructor(
             .addToDisposables()
     }
 
-    fun insertAppProfile(appProfile: AppProfile) {
+    fun insertAppProfile(appProfile: AppProfile): Completable =
         appRepositoryUseCase.insertAppProfile(appProfile)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                Log.d("AppListViewModel", "App profile inserted successfully")
-            }, { error ->
-                Log.e("AppListViewModel", "Error inserting app profile", error)
-            })
-            .addToDisposables()
-    }
 
-    fun deleteAppProfile(appProfile: AppProfile) {
+    fun deleteAppProfile(appProfile: AppProfile): Completable =
         appRepositoryUseCase.deleteAppProfile(appProfile)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                Log.d("AppListViewModel", "App profile deleted successfully")
-            }, { error ->
-                Log.e("AppListViewModel", "Error deleting app profile", error)
-            })
-            .addToDisposables()
-    }
 
     fun getDefaultProfile(): String = appRepositoryUseCase.getDefaultProfile()
 

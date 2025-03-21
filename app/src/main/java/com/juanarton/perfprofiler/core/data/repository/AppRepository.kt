@@ -12,6 +12,7 @@ import com.juanarton.perfprofiler.core.util.DataMapper.profileDomainToEntity
 import com.juanarton.perfprofiler.core.util.DataMapper.profileEntityToDomain
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 class AppRepository @Inject constructor(
@@ -68,16 +69,24 @@ class AppRepository @Inject constructor(
         Single.fromCallable { profileEntityToDomain(localDataSource.getProfileByName(name)) }
 
     override fun insertProfile(profile: Profile): Completable =
-        Completable.fromAction { localDataSource.insertProfile(profileDomainToEntity(profile)) }
+        Completable.fromAction {
+            localDataSource.insertProfile(profileDomainToEntity(profile))
+        }.subscribeOn(Schedulers.io())
 
     override fun updateProfile(profile: Profile): Completable =
-        Completable.fromAction { localDataSource.updateProfile(profileDomainToEntity(profile)) }
+        Completable.fromAction {
+            localDataSource.updateProfile(profileDomainToEntity(profile))
+        }.subscribeOn(Schedulers.io())
 
     override fun deleteProfile(profile: Profile): Completable =
-        Completable.fromAction { localDataSource.deleteProfile(profileDomainToEntity(profile)) }
+        Completable.fromAction {
+            localDataSource.deleteProfile(profileDomainToEntity(profile))
+        }.subscribeOn(Schedulers.io())
 
     override fun getAppProfile(): Single<List<AppProfile>> =
-        Single.fromCallable { localDataSource.getAppProfile().map { appProfileEntityToDomain(it) } }
+        Single.fromCallable {
+            localDataSource.getAppProfile().map { appProfileEntityToDomain(it) }
+        }.subscribeOn(Schedulers.io())
 
     override fun getAppProfileByName(packageId: String): Single<AppProfile> =
         Single.fromCallable {
@@ -86,13 +95,19 @@ class AppRepository @Inject constructor(
         }
 
     override fun insertAppProfile(appProfile: AppProfile): Completable =
-        Completable.fromAction { localDataSource.insertAppProfile(appProfileDomainToEntity(appProfile)) }
+        Completable.fromAction {
+            localDataSource.insertAppProfile(appProfileDomainToEntity(appProfile))
+        }.subscribeOn(Schedulers.io())
 
     override fun deleteAppProfile(appProfile: AppProfile): Completable =
-        Completable.fromAction { localDataSource.deleteAppProfile(appProfileDomainToEntity(appProfile)) }
+        Completable.fromAction {
+            localDataSource.deleteAppProfile(appProfileDomainToEntity(appProfile))
+        }.subscribeOn(Schedulers.io())
 
     override fun deleteAppProfileByProfile(profile: String): Completable =
-        Completable.fromAction { localDataSource.deleteAppProfileByProfile(profile) }
+        Completable.fromAction {
+            localDataSource.deleteAppProfileByProfile(profile)
+        }.subscribeOn(Schedulers.io())
 
     override fun setDefaultProfile(profile: String) {
         localDataSource.setDefaultProfile(profile)
@@ -128,4 +143,25 @@ class AppRepository @Inject constructor(
 
     override fun getOvh45Profile(): String =
         localDataSource.getOvh45Profile()
+
+    override fun setForceProfileActive(force: Boolean) {
+        localDataSource.setForceProfileActive(force)
+    }
+
+    override fun getForceProfileActive(): Boolean =
+        localDataSource.getForceProfileActive()
+
+    override fun setForceProfile(profile: String) {
+        localDataSource.setForceProfile(profile)
+    }
+
+    override fun getForceProfile(): String =
+        localDataSource.getForceProfile()
+
+    override fun setBoostProfile(profile: String) {
+        localDataSource.setBoostProfile(profile)
+    }
+
+    override fun getBoostProfile(): String =
+        localDataSource.getBoostProfile()
 }

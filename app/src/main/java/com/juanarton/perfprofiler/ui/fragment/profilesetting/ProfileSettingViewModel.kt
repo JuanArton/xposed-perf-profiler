@@ -8,6 +8,7 @@ import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.core.data.domain.usecase.local.AppRepositoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -61,29 +62,26 @@ class ProfileSettingViewModel @Inject constructor(
     fun getOvh45Profile(): String =
         appRepositoryUseCase.getOvh45Profile()
 
-    fun deleteProfile(profile: Profile) {
-        appRepositoryUseCase.deleteProfile(profile)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                Log.d("ProfileSettingViewModel", "Profile deleted successfully")
-            }, { error ->
-                Log.e("ProfileSettingViewModel", "Error deleting profile", error)
-            })
-            .addToDisposables()
+    fun setForceProfile(profile: String) {
+        appRepositoryUseCase.setForceProfile(profile)
     }
 
-    fun deleteAppProfileByProfile(profile: String) {
-        appRepositoryUseCase.deleteAppProfileByProfile(profile)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                Log.d("ProfileSettingViewModel", "App profile deleted successfully")
-            }, { error ->
-                Log.e("ProfileSettingViewModel", "Error deleting app profile", error)
-            })
-            .addToDisposables()
+    fun getForceProfile(): String =
+        appRepositoryUseCase.getForceProfile()
+
+    fun setBoostProfile(profile: String) {
+        Log.d("test", "work")
+        appRepositoryUseCase.setBoostProfile(profile)
     }
+
+    fun getBoostProfile(): String =
+        appRepositoryUseCase.getBoostProfile()
+
+    fun deleteProfile(profile: Profile): Completable =
+        appRepositoryUseCase.deleteProfile(profile)
+
+    fun deleteAppProfileByProfile(profile: String): Completable =
+        appRepositoryUseCase.deleteAppProfileByProfile(profile)
 
     private val disposables = CompositeDisposable()
 

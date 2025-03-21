@@ -24,4 +24,6 @@
     <string name="if_temp_42"><![CDATA[If temp > 42]]></string>
     <string name="if_temp_45"><![CDATA[If temp > 45]]></string>
     <string name="profiles">Profiles</string>
+    <string name="force_apply_profile_activate_from_qs_tile">Force apply profile (Activate from QS Tile)</string>
+    <string name="boost_performance_on_orientation_change">Boost Performance (On orientation change)</string>
 </resources>
