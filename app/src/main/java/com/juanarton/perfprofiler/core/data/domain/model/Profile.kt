@@ -18,4 +18,5 @@ data class Profile(
     val gpuMaxFreq: String = "0",
     val gpuMinFreq: String = "0",
     val gpuGovernor: String = "msm-adreno-tz",
+    val cpusOnline: List<String> = listOf<String>("1", "1", "1", "1", "1", "1", "1", "1")
 ): Parcelable

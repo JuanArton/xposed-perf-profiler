@@ -79,6 +79,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/linearLayout4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
@@ -86,6 +87,16 @@
             <include
                 android:id="@+id/clusterGpu"
                 layout="@layout/cluster_item" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
+
+            <include
+                android:id="@+id/clusterCPUSOnline"
+                layout="@layout/cpus_online" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

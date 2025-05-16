@@ -46,6 +46,7 @@ class ProfileSettingFragment : Fragment() {
             profileSettingViewModel.getProfile()
             profileSettingViewModel.profileList.observe(viewLifecycleOwner) {
                 profileList.clear()
+                profileList.add(0, "Not Set")
                 profileList.addAll(
                     it.map { profile ->
                         profile.name
@@ -53,8 +54,6 @@ class ProfileSettingFragment : Fragment() {
                 )
 
                 binding?.apply {
-                    Log.d("test", "test1")
-                    Log.d("test", "$it")
 
                     val editListener: (Profile) -> Unit = { profile ->
                         val intent = Intent(requireContext(), DetailProfileActivity::class.java)

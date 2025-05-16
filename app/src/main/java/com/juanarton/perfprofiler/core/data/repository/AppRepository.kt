@@ -62,6 +62,9 @@ class AppRepository @Inject constructor(
     override fun getGpuMinFreq(): Single<String> =
         Single.fromCallable { localDataSource.getGpuMinFreq() ?: "" }
 
+    override fun getCPUSOnline(): Single<List<String>> =
+        Single.fromCallable { localDataSource.getCPUSOnline() ?: arrayListOf() }
+
     override fun getProfile(): Single<List<Profile>> =
         Single.fromCallable { localDataSource.getProfile().map { profileEntityToDomain(it) } }
 

@@ -45,4 +45,7 @@ data class ProfileEntity(
 
     @ColumnInfo(name = "gpuGovernor")
     val gpuGovernor: String = "msm-adreno-tz",
+
+    @ColumnInfo(name = "cpusOnline")
+    val cpusOnline: List<String> = listOf<String>("1", "1", "1", "1", "1", "1", "1", "1"),
 )

@@ -4,5 +4,6 @@ enum class Action {
     START,
     STOP,
     CHANGE_PROFILE,
-    BOOST
+    BOOST,
+    FORCE
 }

@@ -26,6 +26,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.core.content.edit
 import com.github.kyuubiran.ezxhelper.utils.Log
+import com.juanarton.perfprofiler.core.util.Path.CPU_ONLINE_PATH
 
 @Singleton
 class LocalDataSource @Inject constructor(
@@ -94,6 +95,17 @@ class LocalDataSource @Inject constructor(
 
     fun getGpuMinFreq(): String? =
         readFileAsString(GPU_PATH, GPU_MIN_FREQ)
+
+    fun getCPUSOnline(): List<String>? {
+        val cpusOnline: ArrayList<String> = arrayListOf()
+        for (i in 0..7) {
+            cpusOnline.add(
+                readFileAsString(CPU_ONLINE_PATH, "/cpu$i/online")?: "1"
+            )
+        }
+
+        return cpusOnline
+    }
 
     fun getProfile(): List<ProfileEntity> = profileDAO.getProfile()
 

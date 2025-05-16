@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider
 import autodispose2.autoDispose
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.juanarton.perfprofiler.R
 import com.juanarton.perfprofiler.core.data.domain.model.Profile
 import com.juanarton.perfprofiler.core.util.CPUCluster
@@ -46,6 +47,7 @@ class DetailProfileActivity : AppCompatActivity() {
     private var gpuMaxFreq: String = ""
     private var gpuMinFreq: String = ""
     private var gpuCurrentGov: String = ""
+    private var cpusOnline = mutableListOf<String>()
 
     private var isEdit = false
 
@@ -92,6 +94,7 @@ class DetailProfileActivity : AppCompatActivity() {
             gpuMaxFreq = it.gpuMaxFreq
             gpuMinFreq = it.gpuMinFreq
             gpuCurrentGov = it.gpuGovernor
+            cpusOnline = it.cpusOnline as MutableList<String>
 
             binding?.etProfileName?.setText(it.name)
 
@@ -106,6 +109,7 @@ class DetailProfileActivity : AppCompatActivity() {
         }
 
         initGpuClusterData()
+        initCPUSOnlineData()
     }
 
     private fun initCpuClusterData(policyIndex: Int, policy: String) {
@@ -167,6 +171,33 @@ class DetailProfileActivity : AppCompatActivity() {
                         fragmentBuilder(this@DetailProfileActivity, fragment, android.R.id.content)
                         clickListener(fragment, clusterGov.tvItemValue)
                     }
+                }
+            }
+        }
+    }
+
+    private fun initCPUSOnlineData() {
+        binding?.apply {
+            val cpuSwitchs = listOf<MaterialSwitch>(
+                clusterCPUSOnline.swCpu1,
+                clusterCPUSOnline.swCpu2,
+                clusterCPUSOnline.swCpu3,
+                clusterCPUSOnline.swCpu4,
+                clusterCPUSOnline.swCpu5,
+                clusterCPUSOnline.swCpu6,
+                clusterCPUSOnline.swCpu7,
+                clusterCPUSOnline.swCpu8
+            )
+
+            if (!isEdit) {
+                cpusOnline = detailViewModel.getCPUSonline().toMutableList()
+            }
+
+            cpuSwitchs.forEachIndexed { index, switch ->
+                switch.isChecked = cpusOnline[index] == "1"
+
+                switch.setOnCheckedChangeListener { buttonView, isChecked ->
+                    cpusOnline[index] = if (isChecked) "1" else "0"
                 }
             }
         }
@@ -288,7 +319,7 @@ class DetailProfileActivity : AppCompatActivity() {
                                 cpuMaxFreqs[0], cpuMinFreqs[0], cpuCurrentGov[0],
                                 cpuMaxFreqs[1], cpuMinFreqs[1], cpuCurrentGov[1],
                                 cpuMaxFreqs[2], cpuMinFreqs[2], cpuCurrentGov[2],
-                                gpuMaxFreq, gpuMinFreq, gpuCurrentGov
+                                gpuMaxFreq, gpuMinFreq, gpuCurrentGov, cpusOnline
                             )
                         )
                             .subscribeOn(Schedulers.io())

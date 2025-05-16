@@ -20,7 +20,8 @@ object DataMapper {
             profileEntity.c3Governor,
             profileEntity.gpuMaxFreq,
             profileEntity.gpuMinFreq,
-            profileEntity.gpuGovernor
+            profileEntity.gpuGovernor,
+            profileEntity.cpusOnline
         )
 
     fun profileDomainToEntity(profile: Profile): ProfileEntity =
@@ -37,7 +38,8 @@ object DataMapper {
             profile.c3Governor,
             profile.gpuMaxFreq,
             profile.gpuMinFreq,
-            profile.gpuGovernor
+            profile.gpuGovernor,
+            profile.cpusOnline
         )
 
     fun appProfileEntityToDomain(appProfileEntity: AppProfileEntity): AppProfile =

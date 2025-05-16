@@ -2,6 +2,7 @@ package com.juanarton.perfprofiler.core.util
 
 object Path {
     const val CPU_PATH = "/sys/devices/system/cpu/cpufreq"
+    const val CPU_ONLINE_PATH = "/sys/devices/system/cpu"
     const val GPU_PATH = "/sys/bus/platform/drivers/kgsl-3d/module/drivers/platform:kgsl-3d/3d00000.qcom,kgsl-3d0/devfreq/3d00000.qcom,kgsl-3d0"
 
     const val SCALING_AVAILABLE_FREQ = "scaling_available_frequencies"

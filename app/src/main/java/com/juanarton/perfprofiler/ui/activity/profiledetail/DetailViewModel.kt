@@ -75,6 +75,10 @@ class DetailViewModel @Inject constructor(
         return appRepositoryUseCase.getGpuGovernors().blockingGet()
     }
 
+    fun getCPUSonline(): List<String> {
+        return appRepositoryUseCase.getCPUSOnline().blockingGet()
+    }
+
     fun saveProfile(profile: Profile): Completable =
         appRepositoryUseCase.insertProfile(profile)
 

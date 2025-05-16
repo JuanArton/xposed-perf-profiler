@@ -48,6 +48,9 @@ class AppRepositoryImpl @Inject constructor(
     override fun getGpuMinFreq(): Single<String> =
         iAppRepository.getGpuMinFreq()
 
+    override fun getCPUSOnline(): Single<List<String>> =
+        iAppRepository.getCPUSOnline()
+
     override fun getProfile(): Single<List<Profile>> =
         iAppRepository.getProfile()
 

@@ -19,6 +19,7 @@ interface AppRepositoryUseCase {
     fun getCurrentGpuGovernor(): Single<String>
     fun getGpuMaxFreq(): Single<String>
     fun getGpuMinFreq(): Single<String>
+    fun getCPUSOnline(): Single<List<String>>
     fun getProfile(): Single<List<Profile>>
     fun getProfileByName(name: String): Single<Profile>
     fun insertProfile(profile: Profile): Completable

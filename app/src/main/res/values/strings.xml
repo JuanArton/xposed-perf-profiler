@@ -26,4 +26,12 @@
     <string name="profiles">Profiles</string>
     <string name="force_apply_profile_activate_from_qs_tile">Force apply profile (Activate from QS Tile)</string>
     <string name="boost_performance_on_orientation_change">Boost Performance (On orientation change)</string>
+    <string name="cpu_1">CPU 1</string>
+    <string name="cpu_2">CPU 2</string>
+    <string name="cpu_3">CPU 3</string>
+    <string name="cpu_4">CPU 4</string>
+    <string name="cpu_5">CPU 5</string>
+    <string name="cpu_6">CPU 6</string>
+    <string name="cpu_7">CPU 7</string>
+    <string name="cpu_8">CPU 8</string>
 </resources>
